@@ -10,6 +10,11 @@ MVP fullstack en Next.js para validar barrios cercanos y tiempo de viaje en Nica
 - OpenStreetMap + Leaflet
 - Google Maps opcional para geocoding y rutas reales
 
+## Fuente de datos
+
+- Managua se alimenta desde OpenStreetMap con un script reproducible en `scripts/fetch-managua-osm.mjs`.
+- La semilla generada se guarda en `src/lib/managua-osm.generated.json`.
+
 ## Correr local
 
 ```bash

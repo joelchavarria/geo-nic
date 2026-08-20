@@ -35,22 +35,30 @@ export default function MapPicker({
   office,
   radiusKm,
   onPick,
+  onSetArrival,
 }: {
   center: Point;
   office?: Office;
   radiusKm: number;
   onPick: (point: Point) => void;
+  onSetArrival: (point: Point) => void;
 }) {
   const initialCenter = useMemo(() => center, [center]);
 
   return (
-    <MapContainer center={initialCenter} zoom={12} scrollWheelZoom className="h-full w-full">
+    <MapContainer
+      center={initialCenter}
+      zoom={12}
+      scrollWheelZoom
+      doubleClickZoom={false}
+      className="h-full w-full"
+    >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapCenterSync center={center} />
-      <MapEvents onPick={onPick} />
+      <MapEvents onPick={onPick} onSetArrival={onSetArrival} />
 
       <Circle
         center={center}
@@ -64,10 +72,19 @@ export default function MapPicker({
   );
 }
 
-function MapEvents({ onPick }: { onPick: (point: Point) => void }) {
+function MapEvents({
+  onPick,
+  onSetArrival,
+}: {
+  onPick: (point: Point) => void;
+  onSetArrival: (point: Point) => void;
+}) {
   useMapEvents({
     click(event) {
       onPick({ lat: event.latlng.lat, lng: event.latlng.lng });
+    },
+    dblclick(event) {
+      onSetArrival({ lat: event.latlng.lat, lng: event.latlng.lng });
     },
   });
 

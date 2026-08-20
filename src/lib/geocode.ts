@@ -9,13 +9,13 @@ type GeocodeResult = {
 export async function geocodeQuery(query: string): Promise<GeocodeResult | null> {
   const normalized = query.trim().toLowerCase();
   const neighborhoods = await getNeighborhoods();
-  const match = neighborhoods.find((neighborhood) => {
-    return (
-      neighborhood.name.toLowerCase() === normalized ||
-      `${neighborhood.name}, ${neighborhood.city}`.toLowerCase() === normalized ||
-      neighborhood.name.toLowerCase().includes(normalized)
-    );
-  });
+  const match =
+    neighborhoods.find((neighborhood) => neighborhood.name.toLowerCase() === normalized) ??
+    neighborhoods.find(
+      (neighborhood) => `${neighborhood.name}, ${neighborhood.city}`.toLowerCase() === normalized,
+    ) ??
+    neighborhoods.find((neighborhood) => neighborhood.name.toLowerCase().startsWith(normalized)) ??
+    neighborhoods.find((neighborhood) => neighborhood.name.toLowerCase().includes(normalized));
 
   if (match) {
     return {

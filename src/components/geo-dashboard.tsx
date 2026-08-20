@@ -105,6 +105,11 @@ export function GeoDashboard() {
     setArrivalPoint(draftPoint);
   }
 
+  function handleSetArrivalFromMap(point: Point) {
+    setDraftPoint(point);
+    setArrivalPoint(point);
+  }
+
   const activeCenter = arrivalPoint ?? draftPoint;
   const displayedNeighborhoods = arrivalPoint ? nearby?.neighborhoods ?? [] : [];
   const averageMinutes = displayedNeighborhoods.length
@@ -240,6 +245,7 @@ export function GeoDashboard() {
                   center={activeCenter}
                   radiusKm={radiusKm}
                   onPick={setDraftPoint}
+                  onSetArrival={handleSetArrivalFromMap}
                 />
               </div>
             </div>
@@ -248,7 +254,8 @@ export function GeoDashboard() {
               <div className="rounded-[2rem] border border-white/10 bg-slate-950/60 p-5 shadow-2xl shadow-slate-950/30 backdrop-blur">
                 <h2 className="text-lg font-semibold text-white">Barrios cerca del punto</h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Esta lista se recalcula cuando defines el punto de llegada.
+                  Esta lista se recalcula cuando defines el punto de llegada. Doble clic en el mapa
+                  para fijarlo de una vez.
                 </p>
                 <div className="mt-4 space-y-3">
                   {!arrivalPoint ? (
@@ -262,21 +269,23 @@ export function GeoDashboard() {
                       const minutes = estimateMinutes(neighborhood.distanceKm, "drive");
 
                       return (
-                      <article
-                        key={neighborhood.id}
-                        className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
-                      >
-                        <div>
-                          <div className="font-medium text-white">{neighborhood.name}</div>
-                          <div className="text-sm text-slate-400">
-                            {neighborhood.city} · {neighborhood.state}
+                        <article
+                          key={neighborhood.id}
+                          className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                        >
+                          <div>
+                            <div className="font-medium text-white">{neighborhood.name}</div>
+                            <div className="text-sm text-slate-400">
+                              {neighborhood.city} · {neighborhood.state}
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right text-sm text-slate-300">
-                          <div className="font-semibold text-white">{neighborhood.distanceKm.toFixed(2)} km</div>
-                          <div>{Math.round(minutes)} min aprox.</div>
-                        </div>
-                      </article>
+                          <div className="text-right text-sm text-slate-300">
+                            <div className="font-semibold text-white">
+                              {neighborhood.distanceKm.toFixed(2)} km
+                            </div>
+                            <div>{Math.round(minutes)} min aprox.</div>
+                          </div>
+                        </article>
                       );
                     })
                   ) : (
@@ -309,7 +318,7 @@ export function GeoDashboard() {
                     <ul className="mt-2 space-y-2">
                       <li>Conectar Neon para guardar puntos de llegada mas usados.</li>
                       <li>Usar Google Maps Directions para tiempo real de viaje.</li>
-                      <li>Cargar barrios por ciudad con coordenadas exactas.</li>
+                      <li>Cargar barrios por ciudad desde un GeoJSON oficial de Managua.</li>
                     </ul>
                   </div>
                 </div>

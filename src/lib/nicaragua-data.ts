@@ -1,4 +1,5 @@
 import type { Neighborhood, Office } from "@/lib/types";
+import managuaOsm from "@/lib/managua-osm.generated.json";
 
 export const offices: Office[] = [
   {
@@ -19,88 +20,21 @@ export const offices: Office[] = [
   },
 ];
 
+const managuaNeighborhoods = (managuaOsm as Array<{
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  employmentHint: string;
+}>).map((neighborhood) => ({
+  ...neighborhood,
+  source: "openstreetmap",
+}));
+
 export const neighborhoods: Neighborhood[] = [
-  {
-    id: "altamira",
-    name: "Altamira",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1299,
-    lng: -86.2614,
-    employmentHint: "Zona residencial y de oficinas",
-  },
-  {
-    id: "los-robles",
-    name: "Los Robles",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1445,
-    lng: -86.2762,
-    employmentHint: "Buen acceso a corredores comerciales",
-  },
-  {
-    id: "villa-fontana",
-    name: "Villa Fontana",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1148,
-    lng: -86.2326,
-    employmentHint: "Residencial de alto acceso",
-  },
-  {
-    id: "bolonia",
-    name: "Bolonia",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1396,
-    lng: -86.2917,
-    employmentHint: "Cercano a rutas principales",
-  },
-  {
-    id: "bello-horizonte",
-    name: "Bello Horizonte",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1392,
-    lng: -86.2281,
-    employmentHint: "Buena conectividad urbana",
-  },
-  {
-    id: "san-judas",
-    name: "San Judas",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1094,
-    lng: -86.3062,
-    employmentHint: "Zona popular y de alto movimiento",
-  },
-  {
-    id: "reparto-schick",
-    name: "Reparto Schick",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1411,
-    lng: -86.2135,
-    employmentHint: "Alta densidad residencial",
-  },
-  {
-    id: "carretera-masaya",
-    name: "Carretera a Masaya",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.0937,
-    lng: -86.1978,
-    employmentHint: "Corredor clave para movilidad",
-  },
-  {
-    id: "centro-managua",
-    name: "Centro de Managua",
-    city: "Managua",
-    state: "Managua",
-    lat: 12.1364,
-    lng: -86.2514,
-    employmentHint: "Cercania a oficinas y transporte",
-  },
+  ...managuaNeighborhoods,
   {
     id: "leon-centro",
     name: "Centro de Leon",
