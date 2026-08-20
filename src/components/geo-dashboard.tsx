@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, MapPin, Navigation, Search } from "lucide-react";
 import type { Neighborhood, Point } from "@/lib/types";
 import { estimateMinutes } from "@/lib/geo";
@@ -26,6 +26,8 @@ export function GeoDashboard() {
   const [nearby, setNearby] = useState<NearbyResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const point = arrivalPoint;
@@ -103,15 +105,26 @@ export function GeoDashboard() {
 
   function handleDefineArrivalPoint() {
     setArrivalPoint(draftPoint);
+    setPage(1);
   }
 
   function handleSetArrivalFromMap(point: Point) {
     setDraftPoint(point);
     setArrivalPoint(point);
+    setPage(1);
   }
 
   const activeCenter = arrivalPoint ?? draftPoint;
-  const displayedNeighborhoods = arrivalPoint ? nearby?.neighborhoods ?? [] : [];
+  const displayedNeighborhoods = useMemo(
+    () => (arrivalPoint ? nearby?.neighborhoods ?? [] : []),
+    [arrivalPoint, nearby],
+  );
+  const totalPages = Math.max(1, Math.ceil(displayedNeighborhoods.length / itemsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const pagedNeighborhoods = useMemo(() => {
+    const start = (safePage - 1) * itemsPerPage;
+    return displayedNeighborhoods.slice(start, start + itemsPerPage);
+  }, [displayedNeighborhoods, safePage]);
   const averageMinutes = displayedNeighborhoods.length
     ? displayedNeighborhoods.reduce(
         (sum, neighborhood) => sum + estimateMinutes(neighborhood.distanceKm, "drive"),
@@ -172,15 +185,18 @@ export function GeoDashboard() {
               </div>
 
               <Field label="Radio (km)">
-                <input
-                  type="range"
-                  min={1}
-                  max={30}
-                  step={0.5}
-                  value={radiusKm}
-                  onChange={(event) => setRadiusKm(Number(event.target.value))}
-                  className="w-full accent-sky-400"
-                />
+                  <input
+                    type="range"
+                    min={1}
+                    max={30}
+                    step={0.5}
+                    value={radiusKm}
+                    onChange={(event) => {
+                      setRadiusKm(Number(event.target.value));
+                      setPage(1);
+                    }}
+                    className="w-full accent-sky-400"
+                  />
                 <div className="mt-2 text-sm text-slate-300">{radiusKm.toFixed(1)} km</div>
               </Field>
 
@@ -265,7 +281,19 @@ export function GeoDashboard() {
                   ) : loading && !nearby ? (
                     <SkeletonList />
                   ) : displayedNeighborhoods.length ? (
-                    displayedNeighborhoods.map((neighborhood) => {
+                    <>
+                      <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
+                        <span>
+                          Mostrando {Math.min((safePage - 1) * itemsPerPage + 1, displayedNeighborhoods.length)}-
+                          {Math.min(safePage * itemsPerPage, displayedNeighborhoods.length)} de {displayedNeighborhoods.length}
+                        </span>
+                        <span>
+                          Pagina {safePage} de {totalPages}
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {pagedNeighborhoods.map((neighborhood) => {
                       const minutes = estimateMinutes(neighborhood.distanceKm, "drive");
 
                       return (
@@ -287,7 +315,44 @@ export function GeoDashboard() {
                           </div>
                         </article>
                       );
-                    })
+                        })}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 pt-2">
+                        <button
+                          type="button"
+                          disabled={safePage === 1}
+                          onClick={() => setPage((current) => Math.max(1, current - 1))}
+                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Anterior
+                        </button>
+                        <div className="flex items-center gap-2">
+                          {Array.from({ length: totalPages }).map((_, index) => {
+                            const current = index + 1;
+                            const active = current === safePage;
+
+                            return (
+                              <button
+                                key={current}
+                                type="button"
+                                onClick={() => setPage(current)}
+                                className={`h-2.5 w-2.5 rounded-full transition ${active ? "bg-sky-400" : "bg-white/25"}`}
+                                aria-label={`Ir a pagina ${current}`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <button
+                          type="button"
+                          disabled={safePage === totalPages}
+                          onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Siguiente
+                        </button>
+                      </div>
+                    </>
                   ) : (
                     <EmptyState />
                   )}
